@@ -51,16 +51,6 @@ module DAL {
 			var queue: QueueItem[] = [];
 			var hub = connection.createHubProxy('eventHub');
 
-			/* tslint:disable: no-any */
-			//We must use the `any` type here since we don't know what this might contain!
-			//We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
-			hub.on('eventReceived', (...msgs: any[]) => {
-				/* tslint:enable: no-any */
-				var event = msgs[0], data = msgs[1];
-				writeTransportLog(' ↓ Reply ↓ ', 'Event: ' + event);
-				this.responder(event, data);
-			});
-
 			var writeConnectionLog = (connectionState: string) => {
 				var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
 				var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
@@ -73,30 +63,15 @@ module DAL {
 				logR.custom(prefix + transportType, suffix, details);
 			};
 
-			connection.stateChanged((change: SignalRStateChange) => {
-				//Call the optional function if it really is a function when the state is changed
-				if ($.isFunction(this.onStateChange)) {
-					//Send the change state and the SignalR connection object
-					this.onStateChange.call(this, change, connection);
-				}
-
-				switch (change.newState) {
-					case $.signalR.connectionState.reconnecting:
-						writeConnectionLog('Re-connecting');
-						stopQueue();
-						break;
-					case $.signalR.connectionState.connected:
-						writeConnectionLog('Connected');
-						startQueue();
-						break;
-					case $.signalR.connectionState.disconnected:
-						writeConnectionLog('Disconnected');
-						stopQueue();
-						break;
-					default:
-				}
+			/* tslint:disable: no-any */
+			//We must use the `any` type here since we don't know what this might contain!
+			//We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
+			hub.on('eventReceived', (...msgs: any[]) => {
+				/* tslint:enable: no-any */
+				var event = msgs[0], data = msgs[1];
+				writeTransportLog(' ↓ Reply ↓ ', 'Event: ' + event);
+				this.responder(event, data);
 			});
-			connection.start();
 
 			var stopQueue = () => {
 				writeTransportLog(' ! Queue Stopped ! ', DateTime.NowString());
@@ -127,6 +102,30 @@ module DAL {
 				intervalLoop = window.setInterval(process, 10);
 			};
 
+			connection.stateChanged((change: SignalRStateChange) => {
+				//Call the optional function if it really is a function when the state is changed
+				if ($.isFunction(this.onStateChange)) {
+					//Send the change state and the SignalR connection object
+					this.onStateChange.call(this, change, connection);
+				}
+
+				switch (change.newState) {
+					case $.signalR.connectionState.reconnecting:
+						writeConnectionLog('Re-connecting');
+						stopQueue();
+						break;
+					case $.signalR.connectionState.connected:
+						writeConnectionLog('Connected');
+						startQueue();
+						break;
+					case $.signalR.connectionState.disconnected:
+						writeConnectionLog('Disconnected');
+						stopQueue();
+						break;
+					default:
+				}
+			});
+			connection.start();
 
 			/* tslint:disable: no-any */
 			//We must use the `any` type here since we don't know what this might contain!

@@ -57,6 +57,16 @@ var DAL;
             var connection = $.hubConnection();
             var queue = [];
             var hub = connection.createHubProxy('eventHub');
+            var writeConnectionLog = function (connectionState) {
+                var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
+                var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
+                logR.custom(prefix + ' © ' + connectionState + ' © ', suffix);
+            };
+            var writeTransportLog = function (transportType, details) {
+                var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
+                var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
+                logR.custom(prefix + transportType, suffix, details);
+            };
             /* tslint:disable: no-any */
             //We must use the `any` type here since we don't know what this might contain!
             //We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
@@ -70,39 +80,6 @@ var DAL;
                 writeTransportLog(' ↓ Reply ↓ ', 'Event: ' + event);
                 _this.responder(event, data);
             });
-            var writeConnectionLog = function (connectionState) {
-                var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
-                var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
-                logR.custom(prefix + ' © ' + connectionState + ' © ', suffix);
-            };
-            var writeTransportLog = function (transportType, details) {
-                var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
-                var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
-                logR.custom(prefix + transportType, suffix, details);
-            };
-            connection.stateChanged(function (change) {
-                //Call the optional function if it really is a function when the state is changed
-                if ($.isFunction(_this.onStateChange)) {
-                    //Send the change state and the SignalR connection object
-                    _this.onStateChange.call(_this, change, connection);
-                }
-                switch (change.newState) {
-                    case $.signalR.connectionState.reconnecting:
-                        writeConnectionLog('Re-connecting');
-                        stopQueue();
-                        break;
-                    case $.signalR.connectionState.connected:
-                        writeConnectionLog('Connected');
-                        startQueue();
-                        break;
-                    case $.signalR.connectionState.disconnected:
-                        writeConnectionLog('Disconnected');
-                        stopQueue();
-                        break;
-                    default:
-                }
-            });
-            connection.start();
             var stopQueue = function () {
                 writeTransportLog(' ! Queue Stopped ! ', DateTime.NowString());
                 window.clearInterval(intervalLoop);
@@ -130,6 +107,29 @@ var DAL;
                 };
                 intervalLoop = window.setInterval(process, 10);
             };
+            connection.stateChanged(function (change) {
+                //Call the optional function if it really is a function when the state is changed
+                if ($.isFunction(_this.onStateChange)) {
+                    //Send the change state and the SignalR connection object
+                    _this.onStateChange.call(_this, change, connection);
+                }
+                switch (change.newState) {
+                    case $.signalR.connectionState.reconnecting:
+                        writeConnectionLog('Re-connecting');
+                        stopQueue();
+                        break;
+                    case $.signalR.connectionState.connected:
+                        writeConnectionLog('Connected');
+                        startQueue();
+                        break;
+                    case $.signalR.connectionState.disconnected:
+                        writeConnectionLog('Disconnected');
+                        stopQueue();
+                        break;
+                    default:
+                }
+            });
+            connection.start();
             this.invoke = function (event, data) {
                 queue.push({
                     Event: event,
