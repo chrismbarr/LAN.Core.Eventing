@@ -40,6 +40,17 @@ var ServerEvents = {
 	OnNotification: "ServerOnNotification",
 };
 
+class SignalRConnectionEvents {
+	static InitialConnection: string = "InitialConnection";
+	static ConnectionLost: string = "ConnectionLost";
+	static AttemptingReconnect: string = "AttemptingReconnect";
+	static ConnectionReestablished: string = "ConnectionReestablished";
+};
+
+interface ISignalRConnectionResponse {
+	connection: HubConnection
+};
+
 interface IServerErrorResponse {
 	CorrelationId: string;
 	Message: string;

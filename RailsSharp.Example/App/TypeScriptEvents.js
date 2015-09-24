@@ -20,4 +20,15 @@ var ServerEvents = {
     OnWarn: "ServerOnWarn",
     OnNotification: "ServerOnNotification",
 };
+var SignalRConnectionEvents = (function () {
+    function SignalRConnectionEvents() {
+    }
+    SignalRConnectionEvents.InitialConnection = "InitialConnection";
+    SignalRConnectionEvents.ConnectionLost = "ConnectionLost";
+    SignalRConnectionEvents.AttemptingReconnect = "AttemptingReconnect";
+    SignalRConnectionEvents.ConnectionReestablished = "ConnectionReestablished";
+    return SignalRConnectionEvents;
+})();
+;
+;
 //# sourceMappingURL=TypeScriptEvents.js.map
