@@ -44,7 +44,7 @@ function TestCtrl($scope: ITestScope, eventRegistry: jMess.IEventRegistry) {
 		eventRegistry.raise(TestEvents.TestUnauthorizedRequest, {});
 	}
 	
-	eventRegistry.hook(ServerEvents.OnError,(error) => {
+	eventRegistry.hook(ServerEvents.OnError, (error: IServerErrorResponse) => {
 		$scope.$apply(() => {
 			if (errorTestRunning) {
 				$scope.testState.requestThatResultsInError = true;

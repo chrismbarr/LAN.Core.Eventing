@@ -40,6 +40,11 @@ var ServerEvents = {
 	OnNotification: "ServerOnNotification",
 };
 
+interface IServerErrorResponse {
+	CorrelationId: string;
+	Message: string;
+}
+
 <#+
 	private bool _isRequest(CodeClass2 potentialRequestClass)
 	{

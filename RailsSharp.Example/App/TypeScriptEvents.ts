@@ -6,6 +6,8 @@
 			}
 	declare class TestSingleResponse {
 							}
+	declare class TestUnauthorizedRequest {
+			}
 
 	class TestEvents {
 					
@@ -39,4 +41,9 @@ var ServerEvents = {
 	OnWarn: "ServerOnWarn",
 	OnNotification: "ServerOnNotification",
 };
+
+interface IServerErrorResponse {
+	CorrelationId: string;
+	Message: string;
+}
 
