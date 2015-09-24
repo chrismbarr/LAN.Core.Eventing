@@ -1,8 +1,7 @@
-var __extends = this.__extends || function (d, b) {
+var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
-    __.prototype = b.prototype;
-    d.prototype = new __();
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
 var Str = (function () {
     function Str() {
@@ -15,29 +14,34 @@ var Str = (function () {
     };
     Str.format = function (formatString) {
         var args = arguments;
-        return formatString.replace(/{(\d+)}/g, function (match, number) {
-            var replacementIndex = parseInt(number, 10) + 1;
-            return typeof args[replacementIndex] != 'undefined' ? args[replacementIndex] : match;
+        return formatString.replace(/{(\d+)}/g, function (match, num) {
+            var replacementIndex = parseInt(num, 10) + 1;
+            return typeof args[replacementIndex] !== 'undefined' ? args[replacementIndex] : match;
         });
     };
     return Str;
 })();
 var DAL;
 (function (DAL) {
+    'use strict';
     var BaseExternalInvoker = (function () {
         function BaseExternalInvoker() {
             this.invoke = function (event, data) {
-                if (event == null)
+                if (event === null) {
                     throw 'event is null or undefined';
-                if (data == null)
+                }
+                if (data === null) {
                     throw 'data is null or undefined';
+                }
                 throw 'Invoker.invoke has not been implemented, or you are using the base invoker.';
             };
             this.responder = function (event, data) {
-                if (event == null)
+                if (event === null) {
                     throw 'event is null or undefined';
-                if (data == null)
+                }
+                if (data === null) {
                     throw 'data is null or undefined';
+                }
                 throw 'Invoker.responder delegate was not provided.';
             };
         }
@@ -53,11 +57,15 @@ var DAL;
             var connection = $.hubConnection();
             var queue = [];
             var hub = connection.createHubProxy('eventHub');
+            /* tslint:disable: no-any */
+            //We must use the `any` type here since we don't know what this might contain!
+            //We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
             hub.on('eventReceived', function () {
                 var msgs = [];
                 for (var _i = 0; _i < arguments.length; _i++) {
                     msgs[_i - 0] = arguments[_i];
                 }
+                /* tslint:enable: no-any */
                 var event = msgs[0], data = msgs[1];
                 writeTransportLog(' ↓ Reply ↓ ', 'Event: ' + event);
                 _this.responder(event, data);
@@ -73,8 +81,7 @@ var DAL;
                 logR.custom(prefix + transportType, suffix, details);
             };
             connection.stateChanged(function (change) {
-                var newState = change.newState;
-                switch (newState) {
+                switch (change.newState) {
                     case $.signalR.connectionState.reconnecting:
                         writeConnectionLog('Re-connecting');
                         stopQueue();
@@ -93,7 +100,7 @@ var DAL;
             connection.start();
             var stopQueue = function () {
                 writeTransportLog(' ! Queue Stopped ! ', DateTime.NowString());
-                clearInterval(intervalLoop);
+                window.clearInterval(intervalLoop);
             };
             var startQueue = function () {
                 var sendRequest = function (qi) {
@@ -116,7 +123,7 @@ var DAL;
                         }
                     }
                 };
-                intervalLoop = setInterval(process, 10);
+                intervalLoop = window.setInterval(process, 10);
             };
             this.invoke = function (event, data) {
                 queue.push({
@@ -141,7 +148,7 @@ var DateTime = (function () {
         var now = new Date();
         var hoursTwentyForFormat = now.getHours();
         var hoursTwelveFormat;
-        if (hoursTwentyForFormat == 0) {
+        if (hoursTwentyForFormat === 0) {
             hoursTwelveFormat = 12;
         }
         else {

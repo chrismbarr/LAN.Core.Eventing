@@ -1,5 +1,4 @@
-﻿
-class Str {
+﻿class Str {
 	public static endsWith(input: string, suffix: string): boolean {
 		return input.indexOf(suffix, input.length - suffix.length) !== -1;
 	}
@@ -8,26 +7,34 @@ class Str {
 		return str.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
 	}
 
-	public static format(formatString) {
+	public static format(formatString: string) {
 		var args = arguments;
-		return formatString.replace(/{(\d+)}/g,(match, number) => {
-			var replacementIndex = parseInt(number, 10) + 1;
-			return typeof args[replacementIndex] != 'undefined' ? args[replacementIndex] : match;
+		return formatString.replace(/{(\d+)}/g, (match: string, num: string) => {
+			var replacementIndex: number = parseInt(num, 10) + 1;
+			return typeof args[replacementIndex] !== 'undefined' ? args[replacementIndex] : match;
 		});
 	}
 }
 
 module DAL {
-
+	'use strict';
 	export class BaseExternalInvoker {
 		public invoke = (event: string, data: Object) => {
-			if (event == null) throw 'event is null or undefined';
-			if (data == null) throw 'data is null or undefined';
+			if (event === null) {
+				throw 'event is null or undefined';
+			}
+			if (data === null) {
+				throw 'data is null or undefined';
+			}
 			throw 'Invoker.invoke has not been implemented, or you are using the base invoker.';
 		};
 		public responder = (event: string, data: Object) => {
-			if (event == null) throw 'event is null or undefined';
-			if (data == null) throw 'data is null or undefined';
+			if (event === null) {
+				throw 'event is null or undefined';
+			}
+			if (data === null) {
+				throw 'data is null or undefined';
+			}
 			throw 'Invoker.responder delegate was not provided.';
 		};
 	}
@@ -35,32 +42,36 @@ module DAL {
 	export class SignalRExternalInvoker extends BaseExternalInvoker {
 		constructor() {
 			super();
-			var intervalLoop;
+			var intervalLoop: number;
 			var connection = $.hubConnection();
 			var queue: QueueItem[] = [];
 
 			var hub = connection.createHubProxy('eventHub');
-			hub.on('eventReceived',(...msgs) => {
+
+			/* tslint:disable: no-any */
+			//We must use the `any` type here since we don't know what this might contain!
+			//We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
+			hub.on('eventReceived', (...msgs: any[]) => {
+				/* tslint:enable: no-any */
 				var event = msgs[0], data = msgs[1];
 				writeTransportLog(' ↓ Reply ↓ ', 'Event: ' + event);
 				this.responder(event, data);
 			});
 
-			var writeConnectionLog = (connectionState) => {
+			var writeConnectionLog = (connectionState: string) => {
 				var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
 				var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
 				logR.custom(prefix + ' © ' + connectionState + ' © ', suffix);
 			};
 
-			var writeTransportLog = (transportType, details) => {
+			var writeTransportLog = (transportType: string, details: string) => {
 				var prefix = !logConfig.SupportCustomLogs ? '' : '%c';
 				var suffix = !logConfig.SupportCustomLogs ? '' : 'background: #222; color: #bada55';
 				logR.custom(prefix + transportType, suffix, details);
 			};
 
-			connection.stateChanged(change=> {
-				var newState = change.newState;
-				switch (newState) {
+			connection.stateChanged((change: SignalRStateChange) => {
+				switch (change.newState) {
 					case $.signalR.connectionState.reconnecting:
 						writeConnectionLog('Re-connecting');
 						stopQueue();
@@ -80,7 +91,7 @@ module DAL {
 
 			var stopQueue = () => {
 				writeTransportLog(' ! Queue Stopped ! ', DateTime.NowString());
-				clearInterval(intervalLoop);
+				window.clearInterval(intervalLoop);
 			};
 
 			var startQueue = () => {
@@ -104,8 +115,9 @@ module DAL {
 					}
 				};
 
-				intervalLoop = setInterval(process, 10);
+				intervalLoop = window.setInterval(process, 10);
 			};
+
 
 			this.invoke = (event: string, data: any) => {
 				queue.push({
@@ -123,17 +135,17 @@ module DAL {
 }
 
 class DateTime {
-	public static NowString() {
+	public static NowString(): string {
 		var now = new Date();
 		var hoursTwentyForFormat = now.getHours();
-		var hoursTwelveFormat;
-		if (hoursTwentyForFormat == 0) {
+		var hoursTwelveFormat: number;
+		if (hoursTwentyForFormat === 0) {
 			hoursTwelveFormat = 12;
 		} else {
 			hoursTwelveFormat = hoursTwentyForFormat > 12 ? hoursTwentyForFormat - 12 : hoursTwentyForFormat;
 		}
 
-		function addZero(num) {
+		function addZero(num: number) {
 			return (num >= 0 && num < 10) ? "0" + num : num + "";
 		}
 		var dateBits = addZero(now.getMonth() + 1) + '/' + addZero(now.getDate()) + '/' + now.getFullYear();
