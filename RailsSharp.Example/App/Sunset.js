@@ -81,6 +81,11 @@ var DAL;
                 logR.custom(prefix + transportType, suffix, details);
             };
             connection.stateChanged(function (change) {
+                //Call the optional function if it really is a function when the state is changed
+                if ($.isFunction(_this.onStateChange)) {
+                    //Send the change state and the SignalR connection object
+                    _this.onStateChange.call(_this, change, connection);
+                }
                 switch (change.newState) {
                     case $.signalR.connectionState.reconnecting:
                         writeConnectionLog('Re-connecting');
@@ -132,6 +137,7 @@ var DAL;
                 });
             };
         }
+        SignalRExternalInvoker.prototype.onStateChange = function (change, connection) { };
         return SignalRExternalInvoker;
     })(BaseExternalInvoker);
     DAL.SignalRExternalInvoker = SignalRExternalInvoker;

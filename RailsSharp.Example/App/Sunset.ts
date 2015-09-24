@@ -40,6 +40,8 @@ module DAL {
 	}
 
 	export class SignalRExternalInvoker extends BaseExternalInvoker {
+		public onStateChange(change: SignalRStateChange, connection: HubConnection) { }
+
 		constructor() {
 			super();
 			var intervalLoop: number;
@@ -71,6 +73,12 @@ module DAL {
 			};
 
 			connection.stateChanged((change: SignalRStateChange) => {
+				//Call the optional function if it really is a function when the state is changed
+				if ($.isFunction(this.onStateChange)) {
+					//Send the change state and the SignalR connection object
+					this.onStateChange.call(this, change, connection);
+				}
+
 				switch (change.newState) {
 					case $.signalR.connectionState.reconnecting:
 						writeConnectionLog('Re-connecting');
