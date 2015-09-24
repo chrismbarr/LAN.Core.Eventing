@@ -130,14 +130,20 @@ var DAL;
                 }
             });
             connection.start();
+            /* tslint:disable: no-any */
+            //We must use the `any` type here since we don't know what this might contain!
+            //We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
             this.invoke = function (event, data) {
+                /* tslint:enable: no-any */
                 queue.push({
                     Event: event,
                     Data: data
                 });
             };
         }
-        SignalRExternalInvoker.prototype.onStateChange = function (change, connection) { };
+        SignalRExternalInvoker.prototype.onStateChange = function (change, connection) {
+            //do nothing by default
+        };
         return SignalRExternalInvoker;
     })(BaseExternalInvoker);
     DAL.SignalRExternalInvoker = SignalRExternalInvoker;
