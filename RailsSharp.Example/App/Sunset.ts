@@ -40,14 +40,15 @@ module DAL {
 	}
 
 	export class SignalRExternalInvoker extends BaseExternalInvoker {
-		public onStateChange(change: SignalRStateChange, connection: HubConnection) { }
+		public onStateChange(change: SignalRStateChange, connection: HubConnection) {
+			//do nothing by default
+		}
 
 		constructor() {
 			super();
 			var intervalLoop: number;
 			var connection = $.hubConnection();
 			var queue: QueueItem[] = [];
-
 			var hub = connection.createHubProxy('eventHub');
 
 			/* tslint:disable: no-any */
@@ -127,8 +128,12 @@ module DAL {
 			};
 
 
+			/* tslint:disable: no-any */
+			//We must use the `any` type here since we don't know what this might contain!
+			//We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
 			this.invoke = (event: string, data: any) => {
-				queue.push({
+				/* tslint:enable: no-any */
+				queue.push(<QueueItem>{
 					Event: event,
 					Data: data
 				});
@@ -137,8 +142,12 @@ module DAL {
 	}
 
 	class QueueItem {
+		/* tslint:disable: no-any */
+		//We must use the `any` type here since we don't know what this might contain!
+		//We need to disable the TSLint rule temporarily to allow this to work and to make TSLint not complain
 		Event: string;
 		Data: any;
+		/* tslint:enable: no-any */
 	}
 }
 
